@@ -1,3 +1,5 @@
+from . import nodes
+
 bl_info = {
     "name": "CameraProjectionMaterial",
     "author": "Evan Ryan",
@@ -12,7 +14,7 @@ bl_info = {
 VERSION = 'v0.0.0' 
 
 def register():
-    pass
+    nodes.register()
 
 def unregister():
-    pass
+    nodes.unregister()
