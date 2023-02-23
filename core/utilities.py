@@ -1,5 +1,6 @@
 import bpy
 
+
 class NodeHelper():
     def __path_resolve__(self, obj, path):
         if "." in path:

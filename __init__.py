@@ -1,4 +1,5 @@
 from . import nodes
+from .core import app_handlers
 
 bl_info = {
     "name": "CameraProjectionMaterial",
@@ -15,6 +16,8 @@ VERSION = 'v0.0.0'
 
 def register():
     nodes.register()
+    #app_handlers.register()
 
 def unregister():
+    #app_handlers.unregister()
     nodes.unregister()
