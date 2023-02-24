@@ -16,8 +16,8 @@ VERSION = 'v0.0.0'
 
 def register():
     nodes.register()
-    #app_handlers.register()
+    app_handlers.register()
 
 def unregister():
-    #app_handlers.unregister()
+    app_handlers.unregister()
     nodes.unregister()

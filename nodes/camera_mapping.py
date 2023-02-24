@@ -9,7 +9,7 @@ external_inputs = [
     ('NodeSocketBool', {'name':'use camera values', 'default_value':True}),
     ('NodeSocketFloat', {'name':'focal length', 'default_value':50}),
     ('NodeSocketFloat', {'name':'sensor width', 'default_value':36}),
-    ('NodeSocketVector', {'name':'mapping', 'default_value': (.5,.5,.5)}),
+    ('NodeSocketVector', {'name':'mapping', 'default_value': (.5,.5,.5), 'hide_value': True}),
 ]
 
 external_outputs = [
