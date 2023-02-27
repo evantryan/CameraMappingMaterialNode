@@ -2,13 +2,10 @@ import bpy
 from ..core import utilities
 
 external_inputs = [
-    #('NodeSocketFloat', {'name':'Value', 'default_value':0.500, 'min_value':0.0, 'max_value':1.0})
-    ('NodeSocketBool', {'name':'use scene resolution', 'default_value':True}),
-    ('NodeSocketFloat', {'name':'resolution X', 'default_value':1920.000}),
-    ('NodeSocketFloat', {'name':'resolution Y', 'default_value':1080.000}),
-    ('NodeSocketBool', {'name':'use camera values', 'default_value':True}),
-    ('NodeSocketFloat', {'name':'focal length', 'default_value':50}),
-    ('NodeSocketFloat', {'name':'sensor width', 'default_value':36}),
+    ('NodeSocketFloat', {'name':'resolution X', 'default_value':1920.000, 'hide': True}),
+    ('NodeSocketFloat', {'name':'resolution Y', 'default_value':1080.000, 'hide': True}),
+    ('NodeSocketFloat', {'name':'focal length', 'default_value':50, 'hide': True}),
+    ('NodeSocketFloat', {'name':'sensor width', 'default_value':36, 'hide': True}),
     ('NodeSocketVector', {'name':'mapping', 'default_value': (.5,.5,.5), 'hide_value': True}),
 ]
 
@@ -21,7 +18,7 @@ internal_nodes = [
     ('NodeGroupOutput', {'name':'Group Output'}),
     ('ShaderNodeTexCoord', {'name':'object mapping in'}), # object pointer will get set when the parent node gets set
     ('ShaderNodeSeparateXYZ', {'name':'separate object mapping'}),
-    ('ShaderNodeCombineXYZ', {'name':'combine camera mapping', 'inputs[2].default_value': 1}),
+    ('ShaderNodeCombineXYZ', {'name':'combine camera mapping', 'inputs[2].default_value': 0.0}),
     ('ShaderNodeVectorMath', {'name':'scale camera mapping', 'operation': 'SCALE'}), # SCALE
     ('ShaderNodeVectorMath', {'name':'offset camera mapping', 'operation': 'ADD', 'inputs[1].default_value': (.5,.5,.5)}), # ADD
     ('ShaderNodeMath', {'name':'divide resolution', 'operation': 'DIVIDE'}), # DIV
@@ -30,13 +27,18 @@ internal_nodes = [
     ('ShaderNodeMath', {'name':'multiply resolution', 'operation': 'MULTIPLY'}),
     ('ShaderNodeMath', {'name':'divide x component', 'operation': 'DIVIDE'}), # DIV
     ('ShaderNodeMath', {'name':'divide y component', 'operation': 'DIVIDE'}), # DIV
+    ('ShaderNodeCombineXYZ', {'name':'camera position'}),
+    ('ShaderNodeVectorMath', {'name':'facing mask dot product', 'operation': 'DOT_PRODUCT'}), # DOT_PRODUCT
+    ('ShaderNodeNewGeometry', {'name':'geometry input'}),
+    ('ShaderNodeMixRGB', {'name':'front or back facing'}),
+    ('ShaderNodeInvert', {'name':'facing toggle'}),
 ]
 
 internal_links = [
-    ('inputs[1]', 'nodes["divide resolution"].inputs[0]'),
-    ('inputs[2]', 'nodes["divide resolution"].inputs[1]'),
-    ('inputs[4]', 'nodes["divide focal sensor"].inputs[0]'),
-    ('inputs[5]', 'nodes["divide focal sensor"].inputs[1]'),
+    ('inputs[0]', 'nodes["divide resolution"].inputs[0]'),
+    ('inputs[1]', 'nodes["divide resolution"].inputs[1]'),
+    ('inputs[2]', 'nodes["divide focal sensor"].inputs[0]'),
+    ('inputs[3]', 'nodes["divide focal sensor"].inputs[1]'),
     ('nodes["object mapping in"].outputs[3]', 'nodes["separate object mapping"].inputs[0]'),
     ('nodes["separate object mapping"].outputs[0]', 'nodes["divide x component"].inputs[0]'),
     ('nodes["separate object mapping"].outputs[1]', 'nodes["divide y component"].inputs[0]'),
@@ -47,13 +49,16 @@ internal_links = [
     ('nodes["invert camera mapping z"].outputs[0]', 'nodes["divide x component"].inputs[1]'),
     ('nodes["invert camera mapping z"].outputs[0]', 'nodes["divide y component"].inputs[1]'),
     ('nodes["multiply resolution"].outputs[0]', 'nodes["combine camera mapping"].inputs[1]'),
-    ('nodes["combine camera mapping"].outputs[0]','nodes["scale camera mapping"].inputs[0]' ),
-    ('nodes["divide focal sensor"].outputs[0]','nodes["scale camera mapping"].inputs[3]' ),
-    ('nodes["scale camera mapping"].outputs[0]', 'nodes["offset camera mapping"].inputs[0]' ),
-    ('nodes["offset camera mapping"].outputs[0]', 'outputs[0]' ),
-    # will need to create options for only projecting on the back or front faces. 
-    #     camera position dot product with geometry normal can provide the switch
-
+    ('nodes["combine camera mapping"].outputs[0]','nodes["scale camera mapping"].inputs[0]'),
+    ('nodes["divide focal sensor"].outputs[0]','nodes["scale camera mapping"].inputs[3]'),
+    ('nodes["scale camera mapping"].outputs[0]', 'nodes["offset camera mapping"].inputs[0]'),
+    ('nodes["offset camera mapping"].outputs[0]', 'nodes["front or back facing"].inputs[1]'),
+    ('inputs[4]', 'nodes["front or back facing"].inputs[2]'),
+    ('nodes["camera position"].outputs[0]', 'nodes["facing mask dot product"].inputs[0]'),
+    ('nodes["geometry input"].outputs[1]', 'nodes["facing mask dot product"].inputs[1]'),
+    ('nodes["facing mask dot product"].outputs[1]', 'nodes["facing toggle"].inputs[1]'),
+    ('nodes["facing toggle"].outputs[0]', 'nodes["front or back facing"].inputs[0]'),
+    ('nodes["front or back facing"].outputs[0]', 'outputs[0]' ),
 ]
 
 class CameraMappingShaderNode(bpy.types.ShaderNodeCustomGroup, utilities.NodeHelper):
@@ -63,16 +68,24 @@ class CameraMappingShaderNode(bpy.types.ShaderNodeCustomGroup, utilities.NodeHel
     bl_width_default = 400
     bl_description = "Testing node with unique nodetree"
 
-    def camera_update(self, context):
-        for node in self.node_tree.nodes:
+    def camera_update(caller, context):
+        for node in caller.node_tree.nodes:
             if 'object mapping in' in node.name:
-                node.object = self.camera
+                node.object = caller.camera
     
     camera: bpy.props.PointerProperty(type=bpy.types.Object, poll=utilities.camera_poll, update=camera_update, name='camera')
+    use_scene_resolution: bpy.props.BoolProperty(default=True, )#update=use_camera_values_update)
+    use_camera_values: bpy.props.BoolProperty(default=True, )#update=use_camera_values_update)
+
+    facing_options = [
+        ("both", 'both', '',1 ),
+        ("front", 'front', '',2),
+        ("back",'back', '',3),
+    ]
+    facing: bpy.props.EnumProperty(items=facing_options, default='both')
 
     def _new_node_tree(self):
         nt_name= '.' + self.bl_name + '_nodetree'
-        #nt_name= self.bl_name + '_nodetree'
         
         self.node_tree=bpy.data.node_groups.new(nt_name, 'ShaderNodeTree')
         self.addNodes(internal_nodes)
@@ -85,8 +98,15 @@ class CameraMappingShaderNode(bpy.types.ShaderNodeCustomGroup, utilities.NodeHel
         self._new_node_tree()
 
     def draw_buttons(self, context, layout):
-        # layout.template_color_ramp(self.node_tree.nodes['Ramp'], 'color_ramp' , expand = True) 
-        layout.prop(self, 'camera')       
+        if not self.camera:
+            box = layout.box()
+            box.alert = True
+            box.label(text='a camera is required')
+        layout.prop(self, 'camera')
+        layout.prop(self, 'facing')
+        layout.prop(self, 'use_scene_resolution')
+        layout.prop(self, 'use_camera_values')
+
 
     def copy(self, node):
         if node.node_tree:

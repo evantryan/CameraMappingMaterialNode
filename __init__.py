@@ -5,7 +5,7 @@ bl_info = {
     "name": "CameraProjectionMaterial",
     "author": "Evan Ryan",
     "version": (0, 0, 0),
-    "blender": (3, 3, 0),
+    "blender": (3, 3, 3),
     "location": "Node Editor",
     "category": "Node",
     "description": "Camera projection mapping material node",
