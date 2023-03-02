@@ -51,6 +51,8 @@ def update_camera_mapping_node(node, scene):
             focal.hide = True
             sensor.hide = True
             focal.default_value = camera.data.lens
+
+            # maybe the following should be internal nodes instead?
             if camera.data.sensor_fit == 'HORIZONTAL':
                 sensor.default_value = camera.data.sensor_width
             elif camera.data.sensor_fit == 'VERTICAL':
@@ -75,7 +77,7 @@ def depsgraph_update_pre(scene):
         if material.node_tree:
             if type(material.node_tree) == bpy.types.ShaderNodeTree:
                 for node in material.node_tree.nodes:
-                    if type(node) == CameraMappingShaderNode:
+                    if type(node) == CameraMappingShaderNode: #isinstance()
                         update_camera_mapping_node(node, scene)
 
 
@@ -84,7 +86,7 @@ def frame_change_post(scene, depsgraph):
     for id in depsgraph.ids:
         if type(id) == bpy.types.ShaderNodeTree:
             for node in id.nodes:
-                if type(node) == CameraMappingShaderNode:
+                if type(node) == CameraMappingShaderNode: #isinstance()
                     update_camera_mapping_node(node, depsgraph.scene)
 
 
