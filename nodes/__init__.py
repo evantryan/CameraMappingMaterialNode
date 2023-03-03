@@ -4,7 +4,7 @@ from nodeitems_utils import NodeItem, register_node_categories, unregister_node_
 from nodeitems_builtins import ShaderNodeCategory, CompositorNodeCategory
 
 # could maybe use https://github.com/Secrop/ShaderNodesExtra2.80/blob/master/__init__.py
-# to put these into an existing menu
+# to put these into an existing menu. fingers crossed   
 
 node_categories = [
     ShaderNodeCategory("PIPELINENODES", "Mapping Nodes", items=[
