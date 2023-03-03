@@ -10,6 +10,7 @@ def get_internal_node(group_node, node_name):
 
 def update_camera_mapping_node(node, scene):
     if not config.camera_mapping_node_updating:
+        print('UPDATING!', scene)
         config.camera_mapping_node_updating = True
         mapping_in = node.inputs.get('mapping')
         mapping_in.hide_value = True
@@ -51,9 +52,10 @@ def update_camera_mapping_node(node, scene):
             focal = node.inputs.get('focal length')
             sensor = node.inputs.get('sensor width')
             if node.use_camera_values:
-                focal.hide = True
+                if focal: #socket doesn't always exist
+                    focal.hide = True
+                    focal.default_value = camera.data.lens
                 sensor.hide = True
-                focal.default_value = camera.data.lens
 
                 # maybe the following should be internal nodes instead?
                 if camera.data.sensor_fit == 'HORIZONTAL':
@@ -72,7 +74,7 @@ def update_camera_mapping_node(node, scene):
 
         else:
             print(node.name, 'has no camera specified')
-            
+
         config.camera_mapping_node_updating = False
 
 
