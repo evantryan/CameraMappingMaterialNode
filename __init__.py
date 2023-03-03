@@ -2,7 +2,7 @@ from . import nodes
 from .core import app_handlers
 
 bl_info = {
-    "name": "CameraProjectionMaterial",
+    "name": "CameraMappingMaterialNode",
     "author": "Evan Ryan",
     "version": (0, 0, 0),
     "blender": (3, 3, 3),
