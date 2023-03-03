@@ -63,6 +63,18 @@ def node_menu_include(catid, catname, node):
     category=ShaderNodeCategory(catid, catname, items=itemslist)
     addCat(category, index=index)
 
+def node_menu_exclude(catid, catname, node):
+    index, ident, cat, mt=getCategory(catid, catname)
+    if cat:
+        itemslist=list(cat.items(context=None))
+        for i in itemslist:
+            if i.nodetype==node.bl_name:
+                itemslist.remove(i)
+        delCat(catid, catname)
+    if itemslist:
+        category=ShaderNodeCategory(catid, catname, items=itemslist)
+        addCat(category, index=index)
+
 class NodeHelper():
     def __path_resolve__(self, obj, path):
         if "." in path:

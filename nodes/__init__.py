@@ -1,4 +1,5 @@
 from .camera_mapping import CameraMappingShaderNode
+from ..core.utilities import node_menu_include, node_menu_exclude
 
 from nodeitems_utils import NodeItem, register_node_categories, unregister_node_categories
 from nodeitems_builtins import ShaderNodeCategory, CompositorNodeCategory
@@ -21,10 +22,13 @@ def register():
     for cls in classes:
         register_class(cls)
 
-    register_node_categories("PIPELINENODES", node_categories)
+    #register_node_categories("PIPELINENODES", node_categories)
+    node_menu_include('PIPELINE_NODES', "Pipeline Nodes", CameraMappingShaderNode)
 
 def unregister():
-    unregister_node_categories("PIPELINENODES")
+    #unregister_node_categories("PIPELINENODES")
+    node_menu_exclude('PIPELINE_NODES', "Pipeline Nodes", CameraMappingShaderNode)
+
     from bpy.utils import unregister_class
     for cls in reversed(classes):
         unregister_class(cls)
