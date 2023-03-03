@@ -4,7 +4,7 @@ from nodeitems_utils import NodeItem, register_node_categories, unregister_node_
 from nodeitems_builtins import ShaderNodeCategory, CompositorNodeCategory
 
 node_categories = [
-    ShaderNodeCategory("PIPELINE_NODES", "Pipeline Nodes", items=[
+    ShaderNodeCategory("MAPPING_NODES", "Mapping Nodes", items=[
         NodeItem("CameraMappingShaderNode"),
     ]),
 ]
