@@ -3,10 +3,10 @@ from . import subscriptions
 
 def register():
     bpy.app.handlers.load_post.append(subscriptions.resolution_change)
-    # bpy.app.handlers.load_post.append(subscriptions.camera_change)
+    bpy.app.handlers.load_post.append(subscriptions.camera_change)
 
 def unregister():
-    # bpy.app.handlers.load_post.remove(subscriptions.camera_change)
+    bpy.app.handlers.load_post.remove(subscriptions.camera_change)
     bpy.app.handlers.load_post.remove(subscriptions.resolution_change)
 
 
