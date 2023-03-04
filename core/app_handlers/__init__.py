@@ -94,6 +94,7 @@ def update_camera_mapping_nodes_from_depsgraph(scene, depsgraph=None):
             shader_tree = update.id.original
             for node in shader_tree.nodes:
                 if isinstance(node, CameraMappingShaderNode):
+                    print(msg_bus_trigger_node_count, "<----------------")
                     msg_bus_trigger_node_count -= 1
                     if msg_bus_trigger_node_count < 1 :
                         print('from deeeeeeeeeeeeeeps')
