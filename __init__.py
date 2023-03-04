@@ -1,5 +1,5 @@
 from . import nodes
-from .core import app_handlers
+from .core import app_handlers, msg_bus
 
 bl_info = {
     "name": "CameraMappingMaterialNode",
@@ -17,7 +17,9 @@ VERSION = 'v0.0.0'
 def register():
     nodes.register()
     app_handlers.register()
+    msg_bus.register()
 
 def unregister():
+    msg_bus.unregister()
     app_handlers.unregister()
     nodes.unregister()

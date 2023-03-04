@@ -104,13 +104,12 @@ def update_camera_mapping_nodes(scene, depsgraph=None):
 
 @bpy.app.handlers.persistent
 def depsgraph_update_post(scene, depsgraph):
-    # print('update_from_deps')
     update_camera_mapping_nodes(scene, depsgraph)
-    if depsgraph.scene.render.resolution_y != config.res_y_pre:
-        print('res y changed to', scene.render.resolution_y)
+    # if scene.render.resolution_y != config.res_y_pre:
+    #     print('res y changed to', scene.render.resolution_y)
 
-def depsgraph_update_pre(scene):
-    config.res_y_pre = scene.render.resolution_y
+# def depsgraph_update_pre(scene):
+#     config.res_y_pre = bpy.contect.scene.render.resolution_y
 
 
 @bpy.app.handlers.persistent
