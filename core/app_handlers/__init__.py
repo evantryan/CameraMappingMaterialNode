@@ -9,7 +9,6 @@ def get_internal_node(group_node, node_name):
             return node
 
 def update_camera_mapping_node(node, scene):
-    print('UPDATING!', scene)
     mapping_in = node.inputs.get('mapping')
     mapping_in.hide_value = True
 
@@ -87,6 +86,9 @@ def update_camera_mapping_nodes(scene, depsgraph=None):
             for node in shader_tree.nodes:
                 if isinstance(node, CameraMappingShaderNode):
                     update_camera_mapping_node(node, depsgraph.scene)
+        if isinstance(update.id, bpy.types.RenderSettings):
+            print(update.id.resolution_y)
+            print(update.id.original.resolution_y)
 
     # for id in depsgraph.ids:
     #     if type(id) == bpy.types.ShaderNodeTree:
@@ -105,7 +107,8 @@ def depsgraph_update_post(scene, depsgraph):
 @bpy.app.handlers.persistent
 def frame_change_post(scene, depsgraph):
     # print('update_from_frame/render')
-    update_camera_mapping_nodes(scene, depsgraph)
+    if depsgraph.mode == 'RENDER':
+        update_camera_mapping_nodes(scene, depsgraph)
 
 
 def register():
