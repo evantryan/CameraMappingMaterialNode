@@ -101,12 +101,12 @@ def frame_change_post(scene, depsgraph):
 
 
 def register():
-    bpy.app.handlers.depsgraph_update_post.append(depsgraph_update_pre)
+    bpy.app.handlers.depsgraph_update_post.append(depsgraph_update_post)
     # bpy.app.handlers.frame_change_post.append(frame_change_post)
 
 def unregister():
     # bpy.app.handlers.frame_change_post.remove(frame_change_post)
-    bpy.app.handlers.depsgraph_update_post.remove(depsgraph_update_pre)
+    bpy.app.handlers.depsgraph_update_post.remove(depsgraph_update_post)
 
 
 if __name__ == "__main__":
