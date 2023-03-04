@@ -86,9 +86,9 @@ def update_camera_mapping_nodes(scene, depsgraph=None):
             for node in shader_tree.nodes:
                 if isinstance(node, CameraMappingShaderNode):
                     update_camera_mapping_node(node, depsgraph.scene)
-        if isinstance(update.id, bpy.types.RenderSettings):
-            print(update.id.resolution_y)
-            print(update.id.original.resolution_y)
+        if isinstance(update.id, bpy.types.Scene):
+            print(update.id.render.resolution_y)
+            print(update.id.original.render.resolution_y)
 
     # for id in depsgraph.ids:
     #     if type(id) == bpy.types.ShaderNodeTree:
