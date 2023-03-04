@@ -75,17 +75,18 @@ def update_camera_mapping_node(node, scene):
 
 
 def update_camera_mapping_nodes(scene, depsgraph=None):
-    if not config.camera_mapping_node_updating:
-        # config.camera_mapping_node_updating = True
-        if not depsgraph:
-            depsgraph = bpy.context.evaluated_depsgraph_get()
-        print('DEPSGRAPH_MODE', depsgraph.mode)
-        for id in depsgraph.ids:
-            if type(id) == bpy.types.ShaderNodeTree:
-                for node in id.nodes:
-                    if isinstance(node, CameraMappingShaderNode): #isinstance()
-                        update_camera_mapping_node(node, depsgraph.scene)
-        config.camera_mapping_node_updating = False
+    if not depsgraph:
+        depsgraph = bpy.context.evaluated_depsgraph_get()
+    print('DEPSGRAPH_MODE', depsgraph.mode)
+    for update in depsgraph.updates:
+        if isinstance(update.id, bpy.types.ShaderNodeTree):
+            print(update.id)
+    # for id in depsgraph.ids:
+    #     if type(id) == bpy.types.ShaderNodeTree:
+    #         for node in id.nodes:
+    #             if isinstance(node, CameraMappingShaderNode): #isinstance()
+    #                 update_camera_mapping_node(node, depsgraph.scene)
+    # config.camera_mapping_node_updating = False
 
 
 @bpy.app.handlers.persistent
