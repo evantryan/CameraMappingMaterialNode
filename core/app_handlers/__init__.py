@@ -89,9 +89,9 @@ def update_camera_mapping_nodes(scene, depsgraph=None):
 
 
 @bpy.app.handlers.persistent
-def depsgraph_update_pre(scene):
+def depsgraph_update_post(scene, depsgraph):
     print('update_from_deps')
-    update_camera_mapping_nodes(scene)
+    update_camera_mapping_nodes(scene, depsgraph)
 
 
 @bpy.app.handlers.persistent
@@ -101,12 +101,12 @@ def frame_change_post(scene, depsgraph):
 
 
 def register():
-    # bpy.app.handlers.depsgraph_update_pre.append(depsgraph_update_pre)
-    bpy.app.handlers.frame_change_post.append(frame_change_post)
+    bpy.app.handlers.depsgraph_update_post.append(depsgraph_update_pre)
+    # bpy.app.handlers.frame_change_post.append(frame_change_post)
 
 def unregister():
-    bpy.app.handlers.frame_change_post.remove(frame_change_post)
-    # bpy.app.handlers.depsgraph_update_pre.remove(depsgraph_update_pre)
+    # bpy.app.handlers.frame_change_post.remove(frame_change_post)
+    bpy.app.handlers.depsgraph_update_post.remove(depsgraph_update_pre)
 
 
 if __name__ == "__main__":
