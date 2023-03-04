@@ -73,6 +73,10 @@ def update_camera_mapping_node(node, scene):
         print(node.name, 'has no camera specified')
 
 
+# class scene_resolution_tracker:
+#     def __init__(self, value)
+
+
 def update_camera_mapping_nodes(scene, depsgraph=None):
     if not depsgraph:
         depsgraph = bpy.context.evaluated_depsgraph_get()
@@ -102,6 +106,11 @@ def update_camera_mapping_nodes(scene, depsgraph=None):
 def depsgraph_update_post(scene, depsgraph):
     # print('update_from_deps')
     update_camera_mapping_nodes(scene, depsgraph)
+    if scene.render.resolution_y != config.res_y_pre:
+        print('res y changed to', scene.render.resolution_y)
+
+def depsgraph_update_pre(scene):
+    config.res_y_pre = scene.render.resolution_y
 
 
 @bpy.app.handlers.persistent
