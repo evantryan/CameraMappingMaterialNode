@@ -105,7 +105,6 @@ def register():
     bpy.app.handlers.frame_change_post.append(frame_change_post)
 
 def unregister():
-    pass
     bpy.app.handlers.frame_change_post.remove(frame_change_post)
     bpy.app.handlers.depsgraph_update_pre.remove(depsgraph_update_pre)
 
