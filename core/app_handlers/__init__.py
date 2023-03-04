@@ -9,92 +9,92 @@ def get_internal_node(group_node, node_name):
             return node
 
 def update_camera_mapping_node(node, scene):
-    if not config.camera_mapping_node_updating:
-        print('UPDATING!', scene)
-        config.camera_mapping_node_updating = True
-        mapping_in = node.inputs.get('mapping')
-        mapping_in.hide_value = True
+    print('UPDATING!', scene)
+    mapping_in = node.inputs.get('mapping')
+    mapping_in.hide_value = True
 
-        if node.camera:
-            camera = node.camera
+    if node.camera:
+        camera = node.camera
 
-            # update location
-            camera_position_node = get_internal_node(node, 'camera position')
-            camera_world_postition = camera.matrix_world.to_translation()
-            camera_position_node.inputs[0].default_value = camera_world_postition[0]
-            camera_position_node.inputs[1].default_value = camera_world_postition[1]
-            camera_position_node.inputs[2].default_value = camera_world_postition[2]
+        # update location
+        camera_position_node = get_internal_node(node, 'camera position')
+        camera_world_postition = camera.matrix_world.to_translation()
+        camera_position_node.inputs[0].default_value = camera_world_postition[0]
+        camera_position_node.inputs[1].default_value = camera_world_postition[1]
+        camera_position_node.inputs[2].default_value = camera_world_postition[2]
 
-            # update facing
-            facing_toggle = get_internal_node(node, 'facing toggle')
-            front_or_back_facing = get_internal_node(node, 'front or back facing')
-            if node.facing == 'both':
-                front_or_back_facing.mute = True
-            elif node.facing == 'front':
-                facing_toggle.mute = False
-                front_or_back_facing.mute = False
-            elif node.facing == 'back':
-                facing_toggle.mute = True
-                front_or_back_facing.mute = False
+        # update facing
+        facing_toggle = get_internal_node(node, 'facing toggle')
+        front_or_back_facing = get_internal_node(node, 'front or back facing')
+        if node.facing == 'both':
+            front_or_back_facing.mute = True
+        elif node.facing == 'front':
+            facing_toggle.mute = False
+            front_or_back_facing.mute = False
+        elif node.facing == 'back':
+            facing_toggle.mute = True
+            front_or_back_facing.mute = False
 
-            # update mapping
-            res_x = node.inputs.get('resolution X')
-            res_y = node.inputs.get('resolution Y')
-            if node.use_scene_resolution:
-                res_x.hide = True
-                res_y.hide = True
-                res_x.default_value = scene.render.resolution_x
-                res_y.default_value = scene.render.resolution_y
-            else:
-                res_x.hide = False
-                res_y.hide = False
+        # update mapping
+        res_x = node.inputs.get('resolution X')
+        res_y = node.inputs.get('resolution Y')
+        if node.use_scene_resolution:
+            res_x.hide = True
+            res_y.hide = True
+            res_x.default_value = scene.render.resolution_x
+            res_y.default_value = scene.render.resolution_y
+        else:
+            res_x.hide = False
+            res_y.hide = False
 
-            focal = node.inputs.get('focal length')
-            sensor = node.inputs.get('sensor width')
-            if node.use_camera_values:
-                if focal: #socket doesn't always exist
-                    focal.hide = True
-                    focal.default_value = camera.data.lens
-                sensor.hide = True
+        focal = node.inputs.get('focal length')
+        sensor = node.inputs.get('sensor width')
+        if node.use_camera_values:
+            if focal: #socket doesn't always exist
+                focal.hide = True
+                focal.default_value = camera.data.lens
+            sensor.hide = True
 
-                # maybe the following should be internal nodes instead?
-                if camera.data.sensor_fit == 'HORIZONTAL':
+            # maybe the following should be internal nodes instead?
+            if camera.data.sensor_fit == 'HORIZONTAL':
+                sensor.default_value = camera.data.sensor_width
+            elif camera.data.sensor_fit == 'VERTICAL':
+                sensor.default_value = camera.data.sensor_height * scene.render.resolution_x / scene.render.resolution_y
+            elif camera.data.sensor_fit == 'AUTO': 
+                if scene.render.resolution_x >= scene.render.resolution_y: # square or wider
                     sensor.default_value = camera.data.sensor_width
-                elif camera.data.sensor_fit == 'VERTICAL':
-                    sensor.default_value = camera.data.sensor_height * scene.render.resolution_x / scene.render.resolution_y
-                elif camera.data.sensor_fit == 'AUTO': 
-                    if scene.render.resolution_x >= scene.render.resolution_y: # square or wider
-                        sensor.default_value = camera.data.sensor_width
-                    else:
-                        sensor.default_value = camera.data.sensor_width * scene.render.resolution_x / scene.render.resolution_y
-
-            else:
-                focal.hide = False
-                sensor.hide = False
+                else:
+                    sensor.default_value = camera.data.sensor_width * scene.render.resolution_x / scene.render.resolution_y
 
         else:
-            print(node.name, 'has no camera specified')
+            focal.hide = False
+            sensor.hide = False
 
+    else:
+        print(node.name, 'has no camera specified')
+
+
+def update_camera_mapping_nodes(scene, depsgraph=None):
+    if not config.camera_mapping_node_updating:
+        config.camera_mapping_node_updating = True
+        if not depsgraph:
+            depsgraph = bpy.context.depsgraph_evaluated_get()
+        for id in depsgraph.ids:
+            if type(id) == bpy.types.ShaderNodeTree:
+                for node in id.nodes:
+                    if isinstance(node, CameraMappingShaderNode): #isinstance()
+                        update_camera_mapping_node(node, depsgraph.scene)
         config.camera_mapping_node_updating = False
 
 
 @bpy.app.handlers.persistent
 def depsgraph_update_pre(scene):
-    for material in bpy.data.materials:
-        if material.node_tree:
-            if type(material.node_tree) == bpy.types.ShaderNodeTree:
-                for node in material.node_tree.nodes:
-                    if type(node) == CameraMappingShaderNode: #isinstance()
-                        update_camera_mapping_node(node, scene)
+    update_camera_mapping_nodes(scene)
 
 
 @bpy.app.handlers.persistent
 def frame_change_post(scene, depsgraph):
-    for id in depsgraph.ids:
-        if type(id) == bpy.types.ShaderNodeTree:
-            for node in id.nodes:
-                if type(node) == CameraMappingShaderNode: #isinstance()
-                    update_camera_mapping_node(node, depsgraph.scene)
+    update_camera_mapping_nodes(scene, depsgraph)
 
 
 def register():
