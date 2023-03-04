@@ -1,13 +1,16 @@
 import bpy
 from ...nodes.camera_mapping import CameraMappingShaderNode
 
+msg_bus_trigger_node_count = 0
 
 def update_all_camera_mapping_nodes(context):
+    global msg_bus_trigger_node_count
     for material in bpy.data.materials:
         if isinstance(material.node_tree, bpy.types.ShaderNodeTree):
             for node in material.node_tree.nodes:
                 if isinstance(node, CameraMappingShaderNode):
                     update_camera_mapping_node(node, context.scene)
+                    msg_bus_trigger_node_count += 1
 
         
 def get_internal_node(group_node, node_name):
@@ -81,6 +84,8 @@ def update_camera_mapping_node(node, scene):
 
 
 def update_camera_mapping_nodes_from_depsgraph(scene, depsgraph=None):
+    global msg_bus_trigger_node_count
+
     if not depsgraph:
         depsgraph = bpy.context.evaluated_depsgraph_get()
 
@@ -89,8 +94,10 @@ def update_camera_mapping_nodes_from_depsgraph(scene, depsgraph=None):
             shader_tree = update.id.original
             for node in shader_tree.nodes:
                 if isinstance(node, CameraMappingShaderNode):
-                    print('from deeeeeeeeeeeeeeps')
-                    update_camera_mapping_node(node, depsgraph.scene)
+                    msg_bus_trigger_node_count -= 1
+                    if msg_bus_trigger_node_count < 1 :
+                        print('from deeeeeeeeeeeeeeps')
+                        update_camera_mapping_node(node, depsgraph.scene)
 
 
 @bpy.app.handlers.persistent
