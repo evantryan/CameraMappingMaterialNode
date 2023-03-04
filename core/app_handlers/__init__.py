@@ -1,6 +1,5 @@
 import bpy
 from ...nodes.camera_mapping import CameraMappingShaderNode
-from .. import config
 
 
 def update_all_camera_mapping_nodes(context):
@@ -15,6 +14,7 @@ def get_internal_node(group_node, node_name):
     for node in group_node.node_tree.nodes:
         if node_name in node.name:
             return node
+
 
 def update_camera_mapping_node(node, scene):
     mapping_in = node.inputs.get('mapping')
@@ -57,7 +57,6 @@ def update_camera_mapping_node(node, scene):
         focal = node.inputs.get('focal length')
         sensor = node.inputs.get('sensor width')
         if node.use_camera_values:
-            #if focal: #socket doesn't always exist
             focal.hide = True
             focal.default_value = camera.data.lens
             sensor.hide = True
@@ -100,10 +99,8 @@ def depsgraph_update_post(scene, depsgraph):
 
 def register():
     bpy.app.handlers.depsgraph_update_post.append(depsgraph_update_post)
-    # bpy.app.handlers.frame_change_post.append(frame_change_post)
 
 def unregister():
-    # bpy.app.handlers.frame_change_post.remove(frame_change_post)
     bpy.app.handlers.depsgraph_update_post.remove(depsgraph_update_post)
 
 
