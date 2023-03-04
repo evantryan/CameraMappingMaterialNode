@@ -50,9 +50,9 @@ def update_camera_mapping_node(node, scene):
         focal = node.inputs.get('focal length')
         sensor = node.inputs.get('sensor width')
         if node.use_camera_values:
-            if focal: #socket doesn't always exist
-                focal.hide = True
-                focal.default_value = camera.data.lens
+            #if focal: #socket doesn't always exist
+            focal.hide = True
+            focal.default_value = camera.data.lens
             sensor.hide = True
 
             # maybe the following should be internal nodes instead?
@@ -83,7 +83,7 @@ def update_camera_mapping_nodes(scene, depsgraph=None):
             if type(id) == bpy.types.ShaderNodeTree:
                 for node in id.nodes:
                     if isinstance(node, CameraMappingShaderNode): #isinstance()
-                        update_camera_mapping_node(node, depsgraph.scene)
+                        update_camera_mapping_node(node, depsgraph.scene_eval)
         config.camera_mapping_node_updating = False
 
 
