@@ -2,6 +2,14 @@ import bpy
 from ...nodes.camera_mapping import CameraMappingShaderNode
 from .. import config
 
+
+def update_all_camera_mapping_nodes(context):
+    for material in bpy.data.materials:
+        if isinstance(material.node_tree, bpy.types.ShaderNodeTree):
+            for node in material.node_tree.nodes:
+                if isinstance(node, CameraMappingShaderNode):
+                    update_camera_mapping_node(node, context.scene)
+
         
 def get_internal_node(group_node, node_name):
     for node in group_node.node_tree.nodes:
@@ -73,50 +81,21 @@ def update_camera_mapping_node(node, scene):
         print(node.name, 'has no camera specified')
 
 
-# class scene_resolution_tracker:
-#     def __init__(self, value)
-
-
-def update_camera_mapping_nodes(scene, depsgraph=None):
+def update_camera_mapping_nodes_from_depsgraph(scene, depsgraph=None):
     if not depsgraph:
         depsgraph = bpy.context.evaluated_depsgraph_get()
 
     for update in depsgraph.updates:
         if isinstance(update.id, bpy.types.ShaderNodeTree):
-            # print('DEPSGRAPH_MODE', depsgraph.mode)
-            # print(update.id)
-            # print(update.id.original)
             shader_tree = update.id.original
             for node in shader_tree.nodes:
                 if isinstance(node, CameraMappingShaderNode):
                     update_camera_mapping_node(node, depsgraph.scene)
-        # if isinstance(update.id, bpy.types.Scene):
-        #     print(update.id.render.resolution_y)
-        #     print(update.id.original.render.resolution_y)
-
-    # for id in depsgraph.ids:
-    #     if type(id) == bpy.types.ShaderNodeTree:
-    #         for node in id.nodes:
-    #             if isinstance(node, CameraMappingShaderNode): #isinstance()
-    #                 update_camera_mapping_node(node, depsgraph.scene)
-    # config.camera_mapping_node_updating = False
 
 
 @bpy.app.handlers.persistent
 def depsgraph_update_post(scene, depsgraph):
-    update_camera_mapping_nodes(scene, depsgraph)
-    # if scene.render.resolution_y != config.res_y_pre:
-    #     print('res y changed to', scene.render.resolution_y)
-
-# def depsgraph_update_pre(scene):
-#     config.res_y_pre = bpy.contect.scene.render.resolution_y
-
-
-@bpy.app.handlers.persistent
-def frame_change_post(scene, depsgraph):
-    # print('update_from_frame/render')
-    if depsgraph.mode == 'RENDER':
-        update_camera_mapping_nodes(scene, depsgraph)
+    update_camera_mapping_nodes_from_depsgraph(scene, depsgraph)
 
 
 def register():
