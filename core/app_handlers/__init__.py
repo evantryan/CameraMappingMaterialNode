@@ -89,11 +89,13 @@ def update_camera_mapping_nodes(scene, depsgraph=None):
 
 @bpy.app.handlers.persistent
 def depsgraph_update_pre(scene):
+    print('update_from_deps')
     update_camera_mapping_nodes(scene)
 
 
 @bpy.app.handlers.persistent
 def frame_change_post(scene, depsgraph):
+    print('update_from_frame/render')
     update_camera_mapping_nodes(scene, depsgraph)
 
 
