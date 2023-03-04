@@ -77,11 +77,17 @@ def update_camera_mapping_node(node, scene):
 def update_camera_mapping_nodes(scene, depsgraph=None):
     if not depsgraph:
         depsgraph = bpy.context.evaluated_depsgraph_get()
+
     for update in depsgraph.updates:
         if isinstance(update.id, bpy.types.ShaderNodeTree):
-            print('DEPSGRAPH_MODE', depsgraph.mode)
-            print(update.id)
-            print(update.id.original)
+            # print('DEPSGRAPH_MODE', depsgraph.mode)
+            # print(update.id)
+            # print(update.id.original)
+            shader_tree = update.id.original
+            for node in shader_tree.nodes:
+                if isinstance(node, CameraMappingShaderNode):
+                    update_camera_mapping_node(node, depsgraph.scene)
+
     # for id in depsgraph.ids:
     #     if type(id) == bpy.types.ShaderNodeTree:
     #         for node in id.nodes:
