@@ -5,7 +5,6 @@ msg_bus_trigger_node_count = 0
 
 def update_all_camera_mapping_nodes(context):
     global msg_bus_trigger_node_count
-    msg_bus_trigger_node_count += 1
     for material in bpy.data.materials:
         if isinstance(material.node_tree, bpy.types.ShaderNodeTree):
             for node in material.node_tree.nodes:
