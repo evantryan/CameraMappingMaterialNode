@@ -35,7 +35,7 @@ internal_nodes = [
     ('ShaderNodeInvert', {'name':'facing toggle'}),
     ('ShaderNodeSeparateXYZ', {'name':'separate for mask'}),
     ('ShaderNodeMath', {'name':'mask greater than A', 'operation': 'GREATER_THAN', 'inputs[1].default_value': 1}),
-    ('ShaderNodeMath', {'name':'mask greater than B', 'operation': 'GREATER_THAN''inputs[1].default_value': 1}),
+    ('ShaderNodeMath', {'name':'mask greater than B', 'operation': 'GREATER_THAN','inputs[1].default_value': 1}),
     ('ShaderNodeMath', {'name':'mask less than A', 'operation': 'LESS_THAN','inputs[1].default_value': 0}),
     ('ShaderNodeMath', {'name':'mask less than B', 'operation': 'LESS_THAN','inputs[1].default_value': 0}),
     ('ShaderNodeMath', {'name':'mask max A', 'operation': 'MAXIMUM'}),
