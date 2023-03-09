@@ -34,13 +34,13 @@ internal_nodes = [
     ('ShaderNodeMixRGB', {'name':'front or back facing'}),
     ('ShaderNodeInvert', {'name':'facing toggle'}),
     ('ShaderNodeSeparateXYZ', {'name':'separate for mask'}),
-    ('ShaderNodeMath', {'name':'mask greater than A', 'operation': 'GREATER_THAN', 'inputs[1].default_value': 1}),
-    ('ShaderNodeMath', {'name':'mask greater than B', 'operation': 'GREATER_THAN','inputs[1].default_value': 1}),
-    ('ShaderNodeMath', {'name':'mask less than A', 'operation': 'LESS_THAN','inputs[1].default_value': 0}),
-    ('ShaderNodeMath', {'name':'mask less than B', 'operation': 'LESS_THAN','inputs[1].default_value': 0}),
-    ('ShaderNodeMath', {'name':'mask max A', 'operation': 'MAXIMUM'}),
-    ('ShaderNodeMath', {'name':'mask max B', 'operation': 'MAXIMUM'}),
-    ('ShaderNodeMath', {'name':'mask max C', 'operation': 'MAXIMUM'}),
+    ('ShaderNodeMath', {'name':'mask greater than A', 'operation': 'GREATER_THAN', 'inputs[1].default_value': 0}),
+    ('ShaderNodeMath', {'name':'mask greater than B', 'operation': 'GREATER_THAN','inputs[1].default_value': 0}),
+    ('ShaderNodeMath', {'name':'mask less than A', 'operation': 'LESS_THAN','inputs[1].default_value': 1}),
+    ('ShaderNodeMath', {'name':'mask less than B', 'operation': 'LESS_THAN','inputs[1].default_value': 1}),
+    ('ShaderNodeMath', {'name':'mask min A', 'operation': 'MINIMUM'}),
+    ('ShaderNodeMath', {'name':'mask min B', 'operation': 'MINIMUM'}),
+    ('ShaderNodeMath', {'name':'mask min C', 'operation': 'MINIMUM'}),
 ]
 
 internal_links = [
@@ -73,13 +73,13 @@ internal_links = [
     ('nodes["separate for mask"].outputs[0]', 'nodes["mask less than A"].inputs[0]'),
     ('nodes["separate for mask"].outputs[1]', 'nodes["mask greater than B"].inputs[0]'),
     ('nodes["separate for mask"].outputs[1]', 'nodes["mask less than B"].inputs[0]'),
-    ('nodes["mask greater than A"].outputs[0]', 'nodes["mask max A"].inputs[0]'),
-    ('nodes["mask less than A"].outputs[0]', 'nodes["mask max A"].inputs[1]'),
-    ('nodes["mask greater than B"].outputs[0]', 'nodes["mask max B"].inputs[0]'),
-    ('nodes["mask less than B"].outputs[0]', 'nodes["mask max A"].inputs[1]'),
-    ('nodes["mask max A"].outputs[0]', 'nodes["mask max C"].inputs[0]'),
-    ('nodes["mask max B"].outputs[0]', 'nodes["mask max C"].inputs[1]'),
-    ('nodes["mask max C"].outputs[0]', 'outputs[1]'),
+    ('nodes["mask greater than A"].outputs[0]', 'nodes["mask min A"].inputs[0]'),
+    ('nodes["mask less than A"].outputs[0]', 'nodes["mask min A"].inputs[1]'),
+    ('nodes["mask greater than B"].outputs[0]', 'nodes["mask min B"].inputs[0]'),
+    ('nodes["mask less than B"].outputs[0]', 'nodes["mask min B"].inputs[1]'),
+    ('nodes["mask min A"].outputs[0]', 'nodes["mask min C"].inputs[0]'),
+    ('nodes["mask min B"].outputs[0]', 'nodes["mask min C"].inputs[1]'),
+    ('nodes["mask min C"].outputs[0]', 'outputs[1]'),
 ]
 
 class CameraMappingShaderNode(bpy.types.ShaderNodeCustomGroup, utilities.NodeHelper):
