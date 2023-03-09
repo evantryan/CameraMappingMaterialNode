@@ -85,6 +85,7 @@ def update_camera_mapping_nodes_from_depsgraph(scene, depsgraph=None):
         depsgraph = bpy.context.evaluated_depsgraph_get()
 
     for update in depsgraph.updates:
+        print(update)
         if isinstance(update.id, bpy.types.ShaderNodeTree):
             shader_tree = update.id.original
             for node in shader_tree.nodes:
