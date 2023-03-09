@@ -11,6 +11,7 @@ external_inputs = [
 
 external_outputs = [
     ('NodeSocketVector', {'name':'mapping', 'default_value': (.5,.5,.5)}),
+    ('NodeSocketFloat', {'name':'mask', 'default_value': 1.0}),
 ]
 
 internal_nodes = [
@@ -32,6 +33,14 @@ internal_nodes = [
     ('ShaderNodeNewGeometry', {'name':'geometry input'}),
     ('ShaderNodeMixRGB', {'name':'front or back facing'}),
     ('ShaderNodeInvert', {'name':'facing toggle'}),
+    ('ShaderNodeSeparateXYZ', {'name':'separate for mask'}),
+    ('ShaderNodeMath', {'name':'mask greater than A', 'operation': 'GREATER_THAN'}),
+    ('ShaderNodeMath', {'name':'mask greater than B', 'operation': 'GREATER_THAN'}),
+    ('ShaderNodeMath', {'name':'mask less than A', 'operation': 'LESS_THAN'}),
+    ('ShaderNodeMath', {'name':'mask less than B', 'operation': 'LESS_THAN'}),
+    ('ShaderNodeMath', {'name':'mask max A', 'operation': 'MAXIMUM'}),
+    ('ShaderNodeMath', {'name':'mask max B', 'operation': 'MAXIMUM'}),
+    ('ShaderNodeMath', {'name':'mask max C', 'operation': 'MAXIMUM'}),
 ]
 
 internal_links = [
@@ -59,6 +68,18 @@ internal_links = [
     ('nodes["facing mask dot product"].outputs[1]', 'nodes["facing toggle"].inputs[1]'),
     ('nodes["facing toggle"].outputs[0]', 'nodes["front or back facing"].inputs[0]'),
     ('nodes["front or back facing"].outputs[0]', 'outputs[0]' ),
+    ('nodes["offset camera mapping"].outputs[0]', 'nodes["separate for mask"].inputs[0]'),
+    ('nodes["separate for mask"].outputs[0]', 'nodes["mask greater than A"].inputs[0]'),
+    ('nodes["separate for mask"].outputs[0]', 'nodes["mask less than A"].inputs[0]'),
+    ('nodes["separate for mask"].outputs[1]', 'nodes["mask greater than B"].inputs[0]'),
+    ('nodes["separate for mask"].outputs[1]', 'nodes["mask less than B"].inputs[0]'),
+    ('nodes["mask greater than A"].outputs[0]', 'nodes["mask max A"].inputs[0]'),
+    ('nodes["mask less than A"].outputs[0]', 'nodes["mask max A"].inputs[1]'),
+    ('nodes["mask greater than B"].outputs[0]', 'nodes["mask max B"].inputs[0]'),
+    ('nodes["mask less than B"].outputs[0]', 'nodes["mask max A"].inputs[1]'),
+    ('nodes["mask max A"].outputs[0]', 'nodes["mask max C"].inputs[0]'),
+    ('nodes["mask max B"].outputs[0]', 'nodes["mask max C"].inputs[1]'),
+    ('nodes["mask max C"].outputs[0]', 'outputs[1]'),
 ]
 
 class CameraMappingShaderNode(bpy.types.ShaderNodeCustomGroup, utilities.NodeHelper):
