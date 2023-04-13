@@ -1,11 +1,20 @@
 import bpy
 from ...nodes.camera_mapping import CameraMappingShaderNode
 
+
+def update_all_camera_mapping_nodes(context):
+    for material in bpy.data.materials:
+        if isinstance(material.node_tree, bpy.types.ShaderNodeTree):
+            for node in material.node_tree.nodes:
+                if isinstance(node, CameraMappingShaderNode):
+                    update_camera_mapping_node(node, context.scene)
+
         
 def get_internal_node(group_node, node_name):
     for node in group_node.node_tree.nodes:
         if node_name in node.name:
             return node
+
 
 def update_camera_mapping_node(node, scene):
     mapping_in = node.inputs.get('mapping')
@@ -49,8 +58,8 @@ def update_camera_mapping_node(node, scene):
         sensor = node.inputs.get('sensor width')
         if node.use_camera_values:
             focal.hide = True
-            sensor.hide = True
             focal.default_value = camera.data.lens
+            sensor.hide = True
 
             # maybe the following should be internal nodes instead?
             if camera.data.sensor_fit == 'HORIZONTAL':
@@ -71,33 +80,28 @@ def update_camera_mapping_node(node, scene):
         print(node.name, 'has no camera specified')
 
 
-@bpy.app.handlers.persistent
-def depsgraph_update_pre(scene):
-    for material in bpy.data.materials:
-        if material.node_tree:
-            if type(material.node_tree) == bpy.types.ShaderNodeTree:
-                for node in material.node_tree.nodes:
-                    if type(node) == CameraMappingShaderNode: #isinstance()
-                        update_camera_mapping_node(node, scene)
+def update_camera_mapping_nodes_from_depsgraph(scene, depsgraph=None):
+    if not depsgraph:
+        depsgraph = bpy.context.evaluated_depsgraph_get()
 
-
-@bpy.app.handlers.persistent
-def frame_change_post(scene, depsgraph):
-    for id in depsgraph.ids:
-        if type(id) == bpy.types.ShaderNodeTree:
-            for node in id.nodes:
-                if type(node) == CameraMappingShaderNode: #isinstance()
+    for update in depsgraph.updates:
+        if isinstance(update.id, bpy.types.ShaderNodeTree):
+            shader_tree = update.id.original
+            for node in shader_tree.nodes:
+                if isinstance(node, CameraMappingShaderNode):
                     update_camera_mapping_node(node, depsgraph.scene)
 
 
+@bpy.app.handlers.persistent
+def depsgraph_update_post(scene, depsgraph):
+    update_camera_mapping_nodes_from_depsgraph(scene, depsgraph)
+
+
 def register():
-    bpy.app.handlers.depsgraph_update_pre.append(depsgraph_update_pre)
-    bpy.app.handlers.frame_change_post.append(frame_change_post)
+    bpy.app.handlers.depsgraph_update_post.append(depsgraph_update_post)
 
 def unregister():
-    pass
-    bpy.app.handlers.frame_change_post.remove(frame_change_post)
-    bpy.app.handlers.depsgraph_update_pre.remove(depsgraph_update_pre)
+    bpy.app.handlers.depsgraph_update_post.remove(depsgraph_update_post)
 
 
 if __name__ == "__main__":
