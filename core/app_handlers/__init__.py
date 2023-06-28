@@ -1,4 +1,5 @@
 import bpy
+from . import config
 from ...nodes.camera_mapping import CameraMappingShaderNode
 
 
@@ -16,13 +17,17 @@ def get_internal_node(group_node, node_name):
             return node
 
 
-def update_camera_mapping_node(node, scene):
+def update_camera_mapping_node(node, scene, depsgraph=None):
     mapping_in = node.inputs.get('mapping')
     mapping_in.hide_value = True
 
     if node.camera:
-        camera = node.camera
-
+        selected_camera = node.camera
+        if depsgraph:
+            camera = selected_camera.evaluated_get(depsgraph)
+        else:
+            camera = selected_camera
+        
         # update location
         camera_position_node = get_internal_node(node, 'camera position')
         camera_world_postition = camera.matrix_world.to_translation()
@@ -81,26 +86,57 @@ def update_camera_mapping_node(node, scene):
 
 
 def update_camera_mapping_nodes_from_depsgraph(scene, depsgraph=None):
-    if not depsgraph:
-        depsgraph = bpy.context.evaluated_depsgraph_get()
+    if not config.rendering:
+        if not depsgraph:
+            depsgraph = bpy.context.evaluated_depsgraph_get()
 
-    for update in depsgraph.updates:
-        if isinstance(update.id, bpy.types.ShaderNodeTree):
-            shader_tree = update.id.original
-            for node in shader_tree.nodes:
+        for update in depsgraph.updates:
+            if isinstance(update.id, bpy.types.ShaderNodeTree):
+                shader_tree = update.id.original
+                for node in shader_tree.nodes:
+                    if isinstance(node, CameraMappingShaderNode):
+                        update_camera_mapping_node(node, depsgraph.scene)
+                    
+                    
+def update_camera_mapping_nodes_on_frame_change(scene, depsgraph):
+    if depsgraph:
+        scene = depsgraph.scene
+    for material in bpy.data.materials:
+        if material.node_tree:
+            for node in material.node_tree.nodes:
                 if isinstance(node, CameraMappingShaderNode):
-                    update_camera_mapping_node(node, depsgraph.scene)
-
+                    update_camera_mapping_node(node, scene, depsgraph)
+    
 
 @bpy.app.handlers.persistent
 def depsgraph_update_post(scene, depsgraph):
     update_camera_mapping_nodes_from_depsgraph(scene, depsgraph)
-
+    
+@bpy.app.handlers.persistent
+def frame_change_post(scene, depsgraph):
+    update_camera_mapping_nodes_on_frame_change(scene, depsgraph)
+    
+@bpy.app.handlers.persistent
+def start_rendering(scene, dg):
+    config.rendering = True
+    
+@bpy.app.handlers.persistent
+def stop_rendering(scene, dg):
+    config.rendering = False
+    
 
 def register():
     bpy.app.handlers.depsgraph_update_post.append(depsgraph_update_post)
-
+    bpy.app.handlers.frame_change_post.append(frame_change_post)
+    bpy.app.handlers.render_init.append(start_rendering)
+    bpy.app.handlers.render_complete.append(stop_rendering)
+    bpy.app.handlers.render_cancel.append(stop_rendering)
+    
 def unregister():
+    bpy.app.handlers.render_cancel.remove(stop_rendering)
+    bpy.app.handlers.render_complete.remove(stop_rendering)
+    bpy.app.handlers.render_init.remove(start_rendering)
+    bpy.app.handlers.frame_change_post.remove(frame_change_post)
     bpy.app.handlers.depsgraph_update_post.remove(depsgraph_update_post)
 
 

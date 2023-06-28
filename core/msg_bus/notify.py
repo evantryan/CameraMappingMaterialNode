@@ -6,6 +6,7 @@ def resolution_change(context):
     update_all_camera_mapping_nodes(context)
 
 def camera_change(context):
+    # print('camera changed')
     update_all_camera_mapping_nodes(context)
 
 
